@@ -95,7 +95,6 @@ class H2GRL(torch.nn.Module):
 
 
     def _build_sparse_subgraph(self, edge_index, edge_val, idx, num_nodes):
-        """构建稀疏子图"""
         sub_edge, sub_val = subgraph(subset=idx,
                                      edge_index=edge_index,
                                      edge_attr=edge_val,
@@ -116,32 +115,32 @@ class H2GRL(torch.nn.Module):
         item_cl_loss = loss_fn(item_view1, item_view2)
         return user_cl_loss + item_cl_loss
 
-    # def cal_cluster_loss(self, u_idx, i_idx,
-    #                      node_centroids, node_2cluster,
-    #                      temperature=0.2):
-    #
-    #     node_2cluster_u = node_2cluster[u_idx]
-    #     node_2cluster_i = node_2cluster[i_idx]
-    #
-    #     unique_u_clusters, inverse_indices = torch.unique(node_2cluster_u, return_inverse=True)
-    #     unique_users = torch.zeros_like(unique_u_clusters)
-    #     unique_users[inverse_indices] = u_idx
-    #
-    #     unique_i_clusters, inverse_indices = torch.unique(node_2cluster_i, return_inverse=True)
-    #     unique_items = torch.zeros_like(unique_i_clusters)
-    #     unique_items[inverse_indices] = i_idx
-    #
-    #     user_embeddings = self.cl_embeddings[unique_users]
-    #     item_embeddings = self.cl_embeddings[unique_items]
-    #
-    #     cl_cluster_loss = self.cal_cluster_cl_loss(user_embeddings, node_centroids[unique_u_clusters],
-    #                                                item_embeddings, node_centroids[unique_i_clusters], temperature)
-    #
-    #     return cl_cluster_loss
-    # def cal_cluster_cl_loss(self, user_view1, user_cluster_view2,
-    #                         item_view1, item_cluster_view2,
-    #                         temperature: float = 0.2):
-    #     loss_fn = InfoNCE(temperature)  # 代码目前0.2最优
-    #     user_cl_loss = loss_fn(user_view1, user_cluster_view2)  # 暂时这么写
-    #     item_cl_loss = loss_fn(item_view1, item_cluster_view2)
-    #     return user_cl_loss + item_cl_loss
+    def cal_cluster_loss(self, u_idx, i_idx,
+                         node_centroids, node_2cluster,
+                         temperature=0.2):
+
+        node_2cluster_u = node_2cluster[u_idx]
+        node_2cluster_i = node_2cluster[i_idx]
+
+        unique_u_clusters, inverse_indices = torch.unique(node_2cluster_u, return_inverse=True)
+        unique_users = torch.zeros_like(unique_u_clusters)
+        unique_users[inverse_indices] = u_idx
+
+        unique_i_clusters, inverse_indices = torch.unique(node_2cluster_i, return_inverse=True)
+        unique_items = torch.zeros_like(unique_i_clusters)
+        unique_items[inverse_indices] = i_idx
+
+        user_embeddings = self.cl_embeddings[unique_users]
+        item_embeddings = self.cl_embeddings[unique_items]
+
+        cl_cluster_loss = self.cal_cluster_cl_loss(user_embeddings, node_centroids[unique_u_clusters],
+                                                   item_embeddings, node_centroids[unique_i_clusters], temperature)
+
+        return cl_cluster_loss
+    def cal_cluster_cl_loss(self, user_view1, user_cluster_view2,
+                            item_view1, item_cluster_view2,
+                            temperature: float = 0.2):
+        loss_fn = InfoNCE(temperature)
+        user_cl_loss = loss_fn(user_view1, user_cluster_view2)
+        item_cl_loss = loss_fn(item_view1, item_cluster_view2)
+        return user_cl_loss + item_cl_loss

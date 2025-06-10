@@ -7,7 +7,7 @@ class Config:
         self.cl_weight = 0.8
         self.cl_weight_epochs = 47
         self.cl_weight_low = 0.8
-        self.batch_size = 2048
+        self.batch_size = 4096
         self.epochs = 60
 
         # self.dataset_name = "yelp2018"
@@ -30,7 +30,7 @@ class Config:
         self.lr = 0.001
         self.temperature_cl = 0.2
 
-        self.cluster_loss_start = 15
+        self.cluster_loss_start = 75
         self.cl_cluster_weight = 0.01
         self.temperature_cluster = 0.35
 

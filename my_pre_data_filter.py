@@ -119,23 +119,17 @@ class MyDataset(InMemoryDataset):
 
         """处理边：去自环、阈值过滤、GCN归一化"""
         edge_index, edge_weight = remove_self_loops(*to_edge_index(co_matrix))
-
         # mask = edge_weight > 1  # 共同购买阈值
         # edge_index = edge_index[:, mask]
         # edge_weight = edge_weight[mask]
-
         # mask = edge_weight > torch.median(edge_weight)  # 中位数阈值
         # mask = edge_weight > torch.mean(edge_weight)
-
         mean = torch.mean(edge_weight)
         std = torch.std(edge_weight)
-        mask = edge_weight > (mean + 1.0 * std)  # 保留偏强的边
-
+        mask = edge_weight > (mean + 1.0 * std)
         edge_weight = edge_weight[mask]
         edge_index = edge_index[:, mask]
-
         # edge_index, edge_weight = gcn_norm(edge_index, edge_weight, num_nodes)
-
         return edge_index, edge_weight
 
     def _compute_interaction_scores(self, item_counts, user_counts):
