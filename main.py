@@ -53,8 +53,10 @@ for epoch in range(1, config.epochs + 1):
           f"R@{config.top_k}={results['recall']:.4f}, "
           f"N@{config.top_k}={results['ndcg']:.4f}]"
           f",损失[ rec_loss={metrics['rec_loss'].item():.4f},"
-          f"cl_loss={metrics['cl_loss'].item():.4f}]"
+          f"cl_loss={metrics['cl_loss'].item():.4f}"
+          f"{', cluster_loss=' + format(metrics['cluster_loss'].item(), '.4f') if epoch > config.cluster_loss_start else ''}]"
           )
+
 
     # 嵌入保存
     if config.is_save and epoch >= config.sava_start_epochs:

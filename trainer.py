@@ -13,7 +13,7 @@ class Trainer:
 
     def _train_epoch(self, epoch):
         self.model.train()
-        total = {k: 0.0 for k in ["rec_loss", "cl_loss"]}
+        total = {k: 0.0 for k in ["rec_loss", "cl_loss", "cluster_loss"]}
         batch_num = 0
         # KNN
         if epoch > self.config.cluster_loss_start:
@@ -48,18 +48,20 @@ class Trainer:
                                              emb[items],
                                              item_cl_emb,
                                              temperature=self.config.temperature_cl)
-            cl_weight = self.config.cl_weight
+            cl_weight_1 = self.config.cl_weight
             if epoch > self.config.cl_weight_epochs:
-                cl_weight = self.config.cl_weight_low
+                cl_weight_1 = self.config.cl_weight_low
 
             # 聚类对比损失 TODO 优化
+            cluster_loss = 0
             if epoch > self.config.cluster_loss_start:
                 cluster_loss = self.model.cal_cluster_loss(
                     users, items,
                     node_centroids, node_2cluster,
                     temperature=0.3)
+            cl_weight_2 = self.config.cl_cluster_weight
 
-            loss = rec_loss + cl_weight * cl_loss
+            loss = rec_loss + cl_weight_1 * cl_loss + cl_weight_2 * cluster_loss
 
             self.optimizer.zero_grad()
             loss.backward()
@@ -67,6 +69,7 @@ class Trainer:
             # 损失统计
             total["rec_loss"] += rec_loss
             total["cl_loss"] += cl_loss
+            total["cluster_loss"] += cluster_loss
             batch_num += 1
         return {k: v / batch_num for k, v in total.items()}
 

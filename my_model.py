@@ -33,7 +33,6 @@ class H2GRL(torch.nn.Module):
         self.lin_g = Linear(embedding_dim * len(self.cat_layers), embedding_dim * len(self.cat_layers))
         self.lin = Linear(embedding_dim * len(self.cat_layers), embedding_dim * len(self.cat_layers), bias=True)
 
-
     def _init_encoders(self, emb_dim):
         """初始化同构图编码器"""
         enc_dim = emb_dim * len(self.cat_layers)
@@ -47,19 +46,19 @@ class H2GRL(torch.nn.Module):
 
     def forward(self, edge_index, **kwargs):
         # num_layers层 LGConv  每层保留 embs_layer
-        main_emb, embs_layer = self._compute_main_embeddings(edge_index)
+        self.main_emb, embs_layer = self._compute_main_embeddings(edge_index)
         if not kwargs.get('is_CL', True):  # 评估时候使用
-            return main_emb
+            return self.main_emb
 
         # 同构图嵌入
-        user_cl, item_cl = self._compute_cl_embeddings(
+        self.user_cl, self.item_cl = self._compute_cl_embeddings(
             embs_layer,
             kwargs['u_edge_index'], kwargs['i_edge_index'],
             kwargs['u_edge_value'], kwargs['i_edge_value'],
             kwargs['users'], kwargs['items']
         )
 
-        return main_emb, (user_cl, item_cl)
+        return self.main_emb, (self.user_cl, self.item_cl)
 
     def _compute_main_embeddings(self, edge_index):
         """（LGConv部分）"""
@@ -92,7 +91,6 @@ class H2GRL(torch.nn.Module):
         item_cl = self.encoders_i(item_emb, i_sparse)
 
         return user_cl, item_cl
-
 
     def _build_sparse_subgraph(self, edge_index, edge_val, idx, num_nodes):
         sub_edge, sub_val = subgraph(subset=idx,
@@ -130,17 +128,18 @@ class H2GRL(torch.nn.Module):
         unique_items = torch.zeros_like(unique_i_clusters)
         unique_items[inverse_indices] = i_idx
 
-        user_embeddings = self.cl_embeddings[unique_users]
-        item_embeddings = self.cl_embeddings[unique_items]
+        user_embeddings = self.main_emb[unique_users]
+        item_embeddings = self.main_emb[unique_items]
 
-        cl_cluster_loss = self.cal_cluster_cl_loss(user_embeddings, node_centroids[unique_u_clusters],
-                                                   item_embeddings, node_centroids[unique_i_clusters], temperature)
+        cl_cluster_loss = self.cal_cl_loss(user_embeddings, node_centroids[unique_u_clusters],
+                                           item_embeddings, node_centroids[unique_i_clusters], temperature)
 
         return cl_cluster_loss
-    def cal_cluster_cl_loss(self, user_view1, user_cluster_view2,
-                            item_view1, item_cluster_view2,
-                            temperature: float = 0.2):
-        loss_fn = InfoNCE(temperature)
-        user_cl_loss = loss_fn(user_view1, user_cluster_view2)
-        item_cl_loss = loss_fn(item_view1, item_cluster_view2)
-        return user_cl_loss + item_cl_loss
+
+    # def cal_cluster_cl_loss(self, user_view1, user_cluster_view2,
+    #                         item_view1, item_cluster_view2,
+    #                         temperature: float = 0.2):
+    #     loss_fn = InfoNCE(temperature)
+    #     user_cl_loss = loss_fn(user_view1, user_cluster_view2)
+    #     item_cl_loss = loss_fn(item_view1, item_cluster_view2)
+    #     return user_cl_loss + item_cl_loss

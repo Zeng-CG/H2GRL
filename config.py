@@ -30,7 +30,7 @@ class Config:
         self.lr = 0.001
         self.temperature_cl = 0.2
 
-        self.cluster_loss_start = 75
+        self.cluster_loss_start = 60
         self.cl_cluster_weight = 0.01
         self.temperature_cluster = 0.35
 
