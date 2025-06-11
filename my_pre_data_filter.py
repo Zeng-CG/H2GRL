@@ -122,6 +122,7 @@ class MyDataset(InMemoryDataset):
         # mask = edge_weight > 1  # 共同购买阈值
         # edge_index = edge_index[:, mask]
         # edge_weight = edge_weight[mask]
+        # yelp2018
         # mask = edge_weight > torch.median(edge_weight)  # 中位数阈值
         # mask = edge_weight > torch.mean(edge_weight)
         mean = torch.mean(edge_weight)

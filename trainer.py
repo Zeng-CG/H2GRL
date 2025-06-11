@@ -58,7 +58,7 @@ class Trainer:
                 cluster_loss = self.model.cal_cluster_loss(
                     users, items,
                     node_centroids, node_2cluster,
-                    temperature=0.3)
+                    temperature=self.config.temperature_cluster )
             cl_weight_2 = self.config.cl_cluster_weight
 
             loss = rec_loss + cl_weight_1 * cl_loss + cl_weight_2 * cluster_loss

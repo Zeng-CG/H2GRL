@@ -16,6 +16,7 @@ class Config:
         # self.cl_weight_low = 0.4
         # self.batch_size = 1024
         # self.epochs = 50
+        # self.cluster_loss_start = 20
 
         # 数据集配置
         self.data_path = f"./dataset/{self.dataset_name}"
@@ -30,9 +31,9 @@ class Config:
         self.lr = 0.001
         self.temperature_cl = 0.2
 
-        self.cluster_loss_start = 60
+        self.cluster_loss_start = 50
         self.cl_cluster_weight = 0.01
-        self.temperature_cluster = 0.35
+        self.temperature_cluster = 0.3
 
         # 评估参数
         self.top_k = 20

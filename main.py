@@ -57,7 +57,6 @@ for epoch in range(1, config.epochs + 1):
           f"{', cluster_loss=' + format(metrics['cluster_loss'].item(), '.4f') if epoch > config.cluster_loss_start else ''}]"
           )
 
-
     # 嵌入保存
     if config.is_save and epoch >= config.sava_start_epochs:
         with torch.no_grad():
